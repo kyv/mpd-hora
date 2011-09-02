@@ -4,29 +4,33 @@ use warnings;
 
 use Audio::MPD;
 use Encode; 
+use Getopt::Std;
 
+my %opt=();
+getopts("hs:", \%opt);
+usage() if $opt{h};
+
+# rest time between loops
+my $rest = 300;
+if ($opt{s}){$rest = $opt{s}};
+
+# initialize mpd object
 my $mpd = Audio::MPD->new;
-
-&cue_hora; 
 
 # loop forever
 while (1) {
- 
+    &cue_hora; # cue hora.spx in playlist 
     open(MPC,"mpc idle player |") || die "Failed: $!\n";
     for (<MPC>)
     {
     my $current;
     eval { $current = encode("utf-8", $mpd->current) };
-	if (/player\n/ && $current eq "hora.spx") 
+	if ( /player/ && $current eq "hora.spx") 
 	{
-   	    print $current . "\n";
 	    &spxcat; 
-           #while (my ($key, $value) = each (%$status)) {
-           #print "$key => $value\n";
-           #}
 	}
-	
     }
+    sleep($rest);
 }
 
 sub spxcat
@@ -39,12 +43,8 @@ sub spxcat
     
     my $string = join(" ", ("/usr/local/bin/spxcat", $hour_file, $min_file, $out_file));
 
-    system ("$string") == 0 or die "Cannot open pipe to spxcati ($?): $!";
+    system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
     $mpd->play;
-    1;
-    #my @pipe;
-    #for (<PIPE>){push(@pipe,$_); }
-    #return @pipe;
 }
 
 sub get_time
@@ -52,10 +52,11 @@ sub get_time
     my @timeData = localtime(time);
     my $min = $timeData[1]; 
     my $hour = $timeData[2];
+    if($hour eq "0") {$hour = "12"};
     for ($hour, $min) {
-       if($_ eq "0") {$_ = "12"};
        if(length($_) == 1){$_ = "0" . $_};
     }
+    if ($min eq "00") {$hour = $hour . "_0"}
     return ($hour, $min);
 }
 
@@ -65,4 +66,24 @@ sub cue_hora
     $mpd->playlist->add( 'hora.spx' );
     my $len = $#items += 1;  
     $mpd->playlist->move($len, 1)
+}
+
+sub usage
+{
+    print <<EOS;
+
+    Add hora.spx to playlist, and 
+    wait until song change to play the time. 
+    Make sure you have the audio files in place, 
+    and mpd configured. 
+
+    usage: $0 [-h] [-s n ]
+
+     -h        : this (help) message
+     -s n   : number of seconds to wait between loops
+
+    example: $0 -s 300 
+
+EOS
+    exit; 
 }
