@@ -1,4 +1,4 @@
-Agregar la hora a la lista de mpd, 
+Periodicamente agregar la hora a la lista de mpd, 
 y reproducirla despues de la cancion actual. 
 
 paquete incluye: 
@@ -16,7 +16,7 @@ chmod +x /usr/local/bin/mpd-hora
 
 usar asi: mpd-hora [-h] [-s n ]
 
-     -h        : mensaje de ayuda
+     -h     : mensaje de ayuda
      -s n   : segundo esperar entre bucles
 
 ejemplo: mpd-hora -s 300
