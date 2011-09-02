@@ -11,7 +11,7 @@ getopts("hs:", \%opt);
 usage() if $opt{h};
 
 # rest time between loops
-my $rest = 300;
+my $rest = 300; #default 5 min
 if ($opt{s}){$rest = $opt{s}};
 
 # initialize mpd object
