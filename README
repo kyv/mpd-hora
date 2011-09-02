@@ -11,10 +11,12 @@ para installar:
 cp -r audios /var/lib/mpd/hora
 sudo cp spxcat /usr/local/bin/
 sudo cp mpd-hora /usr/local/bin
+chmod +x /usr/local/bin/spxcat
+chmod +x /usr/local/bin/mpd-hora
 
 usar asi: mpd-hora [-h] [-s n ]
 
      -h        : mensaje de ayuda
      -s n   : segundo esperar entre bucles
 
-    ejemplo: mpd-hora -s 300
+ejemplo: mpd-hora -s 300
