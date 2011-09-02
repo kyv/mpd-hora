@@ -9,14 +9,16 @@ use Getopt::Std;
 my %opt=();
 getopts("hs:", \%opt);
 
-
 &usage() if $opt{h};
 # rest time between loops
+
 my $rest = "300"; #default 5 min
 if ($opt{s}){$rest = $opt{s}};
+
 # initialize mpd object
 my $mpd = Audio::MPD->new;
 
+# daemonize
 Proc::Daemon::Init unless $ARGV{debug};
 
 # loop forever
