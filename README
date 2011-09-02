@@ -1,0 +1,20 @@
+Agregar la hora a la lista de mpd, 
+y reproducirla despues de la cancino actual. 
+
+paquete incluye: 
+
+  spxcat: concatenar dos ficheros formato speex
+  mpd-hora: daemono de la hora 
+  audio/: ficheros de tiempo en formato speex
+
+para installar: 
+cp -r audios /var/lib/mpd/hora
+sudo cp spxcat /usr/local/bin/
+sudo cp mpd-hora /usr/local/bin
+
+usar asi: mpd-hora [-h] [-s n ]
+
+     -h        : mensaje de ayuda
+     -s n   : segundo esperar entre bucles
+
+    ejemplo: mpd-hora -s 300

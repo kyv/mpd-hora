@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+#
+use strict; 
+use warnings; 
+
+die "Not Enough arguments\n" if $#ARGV != 2;
+
+#get files from cmd line
+my ($file1, $file2, $file3) = @ARGV;
+
+my $out_size; 
+my $count = 0;
+my @tags; 
+for ($file2, $file1)
+{
+   @tags = &spx_dec($_, $count);
+   $count++; 
+} 
+
+my @tmps = ("/tmp/spxout0.wav", "/tmp/spxout1.wav");
+for (@tmps) 
+{
+
+   $out_size += -s $_ || die "cant get out_size: $!\n";
+}
+open IN1, '<', "/tmp/spxout1.wav" || die "Can't open file tmpfile: $!\n";
+open IN2, '<', "/tmp/spxout0.wav" || die "Can't open file tmpfile: $!\n";
+open OUT, '>', "/tmp/spxout.wav" || die "Can't open file $file3\n";
+
+# important info for headers
+my $data_size = $out_size - 88; # 44 bits * 2 files 
+my $fs_8 = $out_size - 16; # 8 bits * 2 files
+
+# step through header
+my $buffer;
+read IN1, $buffer,4 ;
+print OUT $buffer;
+read IN1, $buffer,4;
+print OUT pack("V",$fs_8);
+read IN1, $buffer,32;
+print OUT $buffer;
+print OUT pack("V",$data_size);
+# write out the rest
+print OUT $_ while <IN1>;
+seek IN2, 44, 0;
+print OUT $_ while <IN2>;
+
+close IN1;
+close IN2;
+close OUT;
+
+&spx_enc($file3);
+
+sub spx_dec {
+    my $file = shift;
+    my $i = shift;
+    my $out = "/tmp/spxout" . $i . ".wav";
+    my $string = join(" ", ("/usr/bin/speexdec", $file, $out));
+    my $pid = open PIPE, "-|";
+    die "Cannot fork $!" unless defined $pid;
+    unless ( $pid ) {
+        exec "$string" or die "Cannot open pipe to speexdec: $!";
+    }
+    my @pipe;
+    for (<PIPE>){push(@pipe,$_); }
+    return @pipe;
+}
+
+sub spx_enc {
+    my $file = shift;
+    my $out = "/tmp/hora.spx";
+    my $string = join(" ", ("/usr/bin/speexenc", "/tmp/spxout.wav", $file));
+    my $pid = open PIPE, "-|";
+    die "Cannot fork $!" unless defined $pid;
+    unless ( $pid ) {
+        exec "$string" or die "Cannot open pipe to speexdec: $!";
+    }
+    my @pipe;
+    for (<PIPE>){push(@pipe,$_); }
+    return @pipe;
+}
