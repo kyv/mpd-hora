@@ -4,18 +4,20 @@ use warnings;
 
 use Audio::MPD;
 use Encode; 
+use Proc::Daemon;
 use Getopt::Std;
-
 my %opt=();
 getopts("hs:", \%opt);
-usage() if $opt{h};
 
+
+&usage() if $opt{h};
 # rest time between loops
-my $rest = 300; #default 5 min
+my $rest = "300"; #default 5 min
 if ($opt{s}){$rest = $opt{s}};
-
 # initialize mpd object
 my $mpd = Audio::MPD->new;
+
+Proc::Daemon::Init unless $ARGV{debug};
 
 # loop forever
 while (1) {
@@ -26,7 +28,7 @@ while (1) {
     my $current;
     eval { $current = encode("utf-8", $mpd->current) };
 	if ( /player/ && $current eq "hora.spx") 
-	{
+	{ 
 	    &spxcat; 
 	}
     }
@@ -40,9 +42,13 @@ sub spxcat
     my $out_file = "/var/lib/mpd/hora/hora.spx";
     my $hour_file = "/var/lib/mpd/hora/HRS$hour.spx"; 
     my $min_file = "/var/lib/mpd/hora/MIN$min.spx"; 
-    
-    my $string = join(" ", ("/usr/local/bin/spxcat", $hour_file, $min_file, $out_file));
-
+    my $string; 
+    if ($min ne " ")
+    {
+        $string = join(" ", ("/usr/local/bin/spxcat", $hour_file, $min_file, $out_file));
+    } else { #hora en punto
+        $string = join(" ", ("/usr/bin/cp", $hour_file, $out_file));
+    }
     system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
     $mpd->play;
 }
@@ -56,7 +62,11 @@ sub get_time
     for ($hour, $min) {
        if(length($_) == 1){$_ = "0" . $_};
     }
-    if ($min eq "00") {$hour = $hour . "_0"}
+    if ($min eq "00") 
+    {
+        $hour = $hour . "_0";
+        $min = " ";
+    }
     return ($hour, $min);
 }
 
