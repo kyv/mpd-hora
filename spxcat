@@ -1,5 +1,15 @@
 #!/usr/bin/perl
 #
+# This file is part of mpd-hora 
+#
+# This software is copyright (c) 2011 by kev.
+# contact: kevatflujosdotorg
+#
+# This is free software; you can redistribute it and/or modify it under
+# the same terms as the Perl 5 programming language system itself.
+#
+# http://dev.perl.org/licenses/
+
 use strict; 
 use warnings; 
 
