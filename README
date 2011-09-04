@@ -1,5 +1,4 @@
-Periodicamente agregar la hora a la lista de mpd, 
-y reproducirla despues de la cancion actual. 
+Demonio para reproducir la hora con mpd. Agrega 'hora.spx' a la lista de reproduccion, o periodicamente agregar la hora a la lista de mpd de manera automatica. 
 
 paquete incluye: 
 
@@ -19,9 +18,10 @@ sudo cp mpd-hora /usr/local/bin
 chmod +x /usr/local/bin/spxcat
 chmod +x /usr/local/bin/mpd-hora
 
-usar asi: mpd-hora [-h] [-s n ]
+usar asi: mpd-hora -[h|d] [-s n ]
 
      -h     : mensaje de ayuda
-     -s n   : segundo esperar entre bucles
+     -d     : depurar programa, no-daemonizar
+     -s n   : segundos esperar entre bucles (sleep)
 
 ejemplo: mpd-hora -s 300
