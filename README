@@ -7,6 +7,11 @@ paquete incluye:
   mpd-hora: daemono de la hora 
   audio/: ficheros de tiempo en formato speex
 
+Dependencias, 
+actualmente el mecanismo de 'generar' la hora depende 
+de los binarios speexenc y speexdec. en debian si encuentra
+en el paquete 'speex'. 
+
 para installar: 
 cp -r audios /var/lib/mpd/hora
 sudo cp spxcat /usr/local/bin/
