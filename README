@@ -18,10 +18,11 @@ sudo cp mpd-hora /usr/local/bin
 chmod +x /usr/local/bin/spxcat
 chmod +x /usr/local/bin/mpd-hora
 
-usar asi: mpd-hora -[h|d] [-s n ]
+usar asi: mpd-hora -[h|d|m] [-s n ]
 
      -h     : mensaje de ayuda
      -d     : depurar programa, no-daemonizar
+     -m     : modo manual, _no_ agregar hora.spx
      -s n   : segundos esperar entre bucles (sleep)
 
-ejemplo: mpd-hora -s 300
+ejemplo: mpd-hora -s 200
