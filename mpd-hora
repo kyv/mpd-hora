@@ -125,7 +125,7 @@ sub usage
      -m     : modo manual, hora.spx si agrega manualmente
 	      a la lista por el usuario.  
 
-    example: $0 -s 300 
+    example: $0 -s 200 
 
 EOS
     exit; 
