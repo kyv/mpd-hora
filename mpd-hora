@@ -6,35 +6,50 @@ use Audio::MPD;
 use Encode; 
 use Proc::Daemon;
 use Getopt::Std;
+
 my %opt=();
-getopts("hs:", \%opt);
+getopts("hdms:", \%opt);
 
 &usage() if $opt{h};
 # rest time between loops
 
-my $rest = "300"; #default 5 min
+my $rest = "200"; #default 5 min
 if ($opt{s}){$rest = $opt{s}};
 
 # initialize mpd object
 my $mpd = Audio::MPD->new;
 
 # daemonize
-Proc::Daemon::Init unless $ARGV{debug};
+Proc::Daemon::Init unless $opt{d};
 
 # loop forever
 while (1) {
-    &cue_hora; # cue hora.spx in playlist 
+    my $current;
+    unless ($opt{m})
+    {
+      debug("cue hora...\n");
+      eval { $current = encode("utf-8", $mpd->current) };
+      unless ($opt{m} || $current eq 'hora.spx' )
+      {
+          &cue_hora; 
+      }
+  
+    } else {
+      debug("_no_ agregar hora...\n");
+    }
+    debug("espera a un cambio de cancion...\n");
     open(MPC,"mpc idle player |") || die "Failed: $!\n";
     for (<MPC>)
     {
-    my $current;
     eval { $current = encode("utf-8", $mpd->current) };
 	if ( /player/ && $current eq "hora.spx") 
 	{ 
+            debug("spxcat...\n");
 	    &spxcat; 
 	}
     }
-    sleep($rest);
+    debug("dormir $rest segundos\n") unless $opt{m};
+    sleep($rest) unless $opt{m};
 }
 
 sub spxcat
@@ -51,12 +66,14 @@ sub spxcat
     } else { #hora en punto
         $string = join(" ", ("/usr/bin/cp", $hour_file, $out_file));
     }
+    debug("$string\n");
     system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
     $mpd->play;
 }
 
 sub get_time
 {
+    debug("formatear tiempo\n");
     my @timeData = localtime(time);
     my $min = $timeData[1]; 
     my $hour = $timeData[2];
@@ -89,13 +106,24 @@ sub usage
     Make sure you have the audio files in place, 
     and mpd configured. 
 
-    usage: $0 [-h] [-s n ]
+    usar asi: $0 -[h|d|m] [-s n ]
 
      -h        : this (help) message
+     -d     : depurar programa, no-daemonizar
      -s n   : number of seconds to wait between loops
+     -m     : modo manual, hora.spx si agrega manualmente
+	      a la lista por el usuario.  
 
     example: $0 -s 300 
 
 EOS
     exit; 
+}
+
+sub debug {
+    return unless $opt{d};
+    my ($msg) = @_;
+    my ($s,$m,$h) = ( localtime(time) )[0,1,2,3,6];
+    my $date = sprintf "%02d:%02d:%02d", $h, $m, $s;
+    warn "$date $msg";
 }
