@@ -24,7 +24,7 @@ getopts("hdms:", \%opt);
 &usage() if $opt{h};
 # rest time between loops
 
-my $rest = "200"; #default 5 min
+my $rest = "200"; # 3.333 min
 if ($opt{s}){$rest = $opt{s}};
 
 # initialize mpd object
