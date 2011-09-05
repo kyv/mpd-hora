@@ -9,7 +9,7 @@ paquete incluye:
 Dependencias, 
 actualmente el mecanismo de 'generar' la hora depende 
 de los binarios speexenc y speexdec. en debian si encuentra
-en el paquete 'speex'. 
+en el paquete 'speex'. ademas necesitas 'mpc', y, obviamente, mpd. 
 
 para installar: 
 cp -r audios /var/lib/mpd/hora
