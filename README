@@ -1,4 +1,4 @@
-Demonio para reproducir la hora con mpd. Agrega 'hora.spx' a la lista de reproduccion, o periodicamente agregar la hora a la lista de mpd de manera automatica. 
+Demonio para reproducir la hora con mpd. Permite que mpd reproduce la hora actual a reproducir 'hora.spx', permitiendo asi su programción a treves de la lista de reproduccion de mpd. Mpd-hora puede tambien periodicamente agregar 'hora.spx' a la cola de mpd de manera automatica. 
 
 paquete incluye: 
 
