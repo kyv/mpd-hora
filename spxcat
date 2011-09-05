@@ -58,8 +58,8 @@ print OUT $_ while <IN2>;
 close IN1;
 close IN2;
 close OUT;
-
 &spx_enc($file3);
+unlink glob "/tmp/spxout*";
 
 sub spx_dec {
     my $file = shift;
