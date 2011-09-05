@@ -48,7 +48,7 @@ while (1) {
     } else {
       debug("_no_ agregar hora...\n");
     }
-    debug("espera a un cambio de cancion...\n");
+    debug("mpc idle ...\n");
     open(MPC,"mpc idle player |") || die "Failed: $!\n";
     for (<MPC>)
     {
@@ -75,7 +75,7 @@ sub spxcat
     {
         $string = join(" ", ("/usr/local/bin/spxcat", $hour_file, $min_file, $out_file));
     } else { #hora en punto
-        $string = join(" ", ("/usr/bin/cp", $hour_file, $out_file));
+        $string = join(" ", ("/bin/cp", $hour_file, $out_file));
     }
     debug("$string\n");
     system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
