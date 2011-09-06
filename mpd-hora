@@ -39,8 +39,7 @@ while (1) {
     unless ($opt{m})
     {
       debug("cue hora...\n");
-      eval { $current = encode("utf-8", $mpd->current) };
-      unless ($opt{m} || $current eq 'hora.spx' )
+      unless ($opt{m} )
       {
           &cue_hora; 
       }
@@ -102,14 +101,14 @@ sub get_time
 sub cue_hora 
 {
     my @items = $mpd->playlist->as_items;
-    if ( $items[0..1]->file eq 'hora.spx' ) 
+    if ( $items[0]->file eq 'hora.spx' || $items[1]->file eq 'hora.spx' )
     {
         debug("hora.spx already in the cue, skip ...\n");
         return; 
     }
     $mpd->playlist->add( 'hora.spx' );
     my $len = $#items += 1;  
-    $mpd->playlist->move($len, 1)
+    $mpd->playlist->move($len, 1);
 }
 
 sub usage
