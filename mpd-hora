@@ -17,7 +17,6 @@ use Audio::MPD;
 use Encode; 
 use Proc::Daemon;
 use Getopt::Std;
-use Thread;
 
 my $horalib="/var/lib/mpd/hora";
 my $horabin="/usr/local/bin";
@@ -60,6 +59,7 @@ while (1) {
  	    if ( $pid == -1 ) {
 		die "failed to fork $!\n";
 	    } elsif ( $pid == 0 ) {
+	        &spxcat;
 		&delete if $opt{a};
 		exit; 
 	    } else { 
@@ -77,7 +77,8 @@ sub spxcat
     my $out_file = "$mpdlib/hora.spx";
     my $hour_file = "$horalib/HRS$hour.spx"; 
     my $min_file = "$horalib/MIN$min.spx"; 
-    my $string; 
+    my $string;
+    $mpd->stop; 
     if ($min ne " ")
     {
         $string = join(" ", ("$horabin/spxcat", $hour_file, $min_file, $out_file));
@@ -86,6 +87,7 @@ sub spxcat
     }
     debug("$string\n");
     system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
+    $mpd->play; 
 
 }
 
@@ -105,7 +107,7 @@ sub get_time
 {
     debug("formatear tiempo\n");
     my @timeData = localtime(time);
-    my $min = $timeData[1]; 
+    my $min = $timeData[1];
     my $hour = $timeData[2];
     if($hour eq "0") {$hour = "12"};
     for ($hour, $min) {
