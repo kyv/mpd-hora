@@ -17,32 +17,33 @@ use Audio::MPD;
 use Encode; 
 use Proc::Daemon;
 use Getopt::Std;
+use Thread;
+
+my $horalib="/var/lib/mpd/hora";
+my $horabin="/usr/local/bin";
+my $mpdlib="/var/lib/mpd/music";
+# rest time between loops, if auto mode
+my $rest = "200"; # 3.333 min, works for me!
 
 my %opt=();
-getopts("hdms:", \%opt);
+getopts("hdas:", \%opt);
 
 &usage() if $opt{h};
 
-# rest time between loops
-my $rest = "200"; # 3.333 min, works for me!
 if ($opt{s}){$rest = $opt{s}};
 
 # initialize mpd object
 my $mpd = Audio::MPD->new;
+my $song = $mpd->collection->song( 'hora.spx' );
 
 # daemonize
 Proc::Daemon::Init unless $opt{d};
 
 # loop forever
 while (1) {
-    my $current;
-    unless ($opt{m})
+    if($opt{a})
     {
-      debug("cue hora...\n");
-      unless ($opt{m} )
-      {
-          &cue_hora; 
-      }
+      &cue_hora; 
   
     } else {
       debug("_no_ agregar hora...\n");
@@ -54,30 +55,50 @@ while (1) {
 	if ( /player/ ) 
 	{ 
             debug("spxcat...\n");
-	    &spxcat; 
+	    &spxcat;
+	    my $pid = fork();
+ 	    if ( $pid == -1 ) {
+		die "failed to fork $!\n";
+	    } elsif ( $pid == 0 ) {
+		&delete if $opt{a};
+		exit; 
+	    } else { 
+		waitpid($pid,0);	
+	    }	
 	}
     }
-    debug("dormir $rest segundos\n") unless $opt{m};
-    sleep($rest) unless $opt{m};
+    debug("dormir $rest segundos\n") if $opt{a};
+    sleep($rest) if $opt{a};
 }
 
 sub spxcat
 {
-    $mpd->stop;
     my ($hour, $min) = &get_time;
-    my $out_file = "/var/lib/mpd/hora/hora.spx";
-    my $hour_file = "/var/lib/mpd/hora/HRS$hour.spx"; 
-    my $min_file = "/var/lib/mpd/hora/MIN$min.spx"; 
+    my $out_file = "$mpdlib/hora.spx";
+    my $hour_file = "$horalib/HRS$hour.spx"; 
+    my $min_file = "$horalib/MIN$min.spx"; 
     my $string; 
     if ($min ne " ")
     {
-        $string = join(" ", ("/usr/local/bin/spxcat", $hour_file, $min_file, $out_file));
+        $string = join(" ", ("$horabin/spxcat", $hour_file, $min_file, $out_file));
     } else { #hora en punto
         $string = join(" ", ("/bin/cp", $hour_file, $out_file));
     }
     debug("$string\n");
     system ("$string") == 0 or die "Cannot open pipe to spxcat ($?): $!";
-    $mpd->play;
+
+}
+
+sub delete {
+    debug("modo automatico, aguanta al voz\n");
+    sleep(15); 
+    my @items = $mpd->playlist->as_items;
+    my $pos = $mpd->current->pos;
+    my $prev = $pos-1;
+    if (  $items[$prev]->file eq 'hora.spx' ) {
+        debug("quitar hora.spx de la lista\n");
+        $mpd->playlist->delete($prev);
+    }
 }
 
 sub get_time
@@ -101,14 +122,18 @@ sub get_time
 sub cue_hora 
 {
     my @items = $mpd->playlist->as_items;
-    if ( $items[0]->file eq 'hora.spx' || $items[1]->file eq 'hora.spx' )
+    my $pos = $mpd->current->pos;
+    my $next = $pos+1;
+    if ( $items[$next]->file eq 'hora.spx' || $items[$pos]->file eq 'hora.spx' )
     {
-        debug("hora.spx already in the cue, skip ...\n");
+        debug("$song already in the cue, skip ...\n");
         return; 
     }
-    $mpd->playlist->add( 'hora.spx' );
-    my $len = $#items += 1;  
-    $mpd->playlist->move($len, 1);
+    debug("cue $song\n");
+    $mpd->playlist->add( "$song" );
+    debug("add hora to position: $pos\n");
+    my $len = $#items+1;  
+    $mpd->playlist->move($len, $next);
 }
 
 sub usage
@@ -120,13 +145,13 @@ sub usage
     Make sure you have the audio files in place, 
     and mpd configured. 
 
-    usar asi: $0 -[h|d|m] [-s n ]
+    usar asi: $0 -[h|d|a] [-s n ]
 
-     -h        : this (help) message
+     -h     : this (help) message
      -d     : depurar programa, no-daemonizar
      -s n   : number of seconds to wait between loops
-     -m     : modo manual, hora.spx si agrega manualmente
-	      a la lista por el usuario.  
+     -a     : automatico, 'hora.spx' si agrega manualmente
+	      a la lista por cada '-s' segundos.  
 
     example: $0 -s 200 
 
