@@ -12,15 +12,13 @@
 
 use strict; 
 use warnings; 
+#die "Not Enough arguments\n" if $#ARGV != 1;
 
-#die "Not Enough arguments\n" if $#ARGV != 2;
-
-#get files from cmd line
-#my ($file1, $file2, $file3) = @ARGV;
-my $mpdlib="/var/lib/mpd/music";
 my $horalib="/var/lib/mpd/hora";
 my ($hour, $min) = &get_time;
-my $out_file = "$mpdlib/hora.spx";
+
+my ($outfile) = @ARGV; #get outfile from cmd line
+
 my $hour_file = "$horalib/HRS$hour.spx"; 
 my $min_file = "$horalib/MIN$min.spx"; 
 if ($min ne " ")
@@ -28,7 +26,7 @@ if ($min ne " ")
         &spxcat;
     } else { #hora en punto
         
-	my $cmd = join(" ", ("/bin/cp", $hour_file, $out_file));
+	my $cmd = join(" ", ("/bin/cp", $hour_file, $outfile));
         system ("$cmd") == 0 or die "Cannot open pipe to spxcat ($?): $!";
 
     }
@@ -47,7 +45,7 @@ sub spxcat {
     }
     open IN1, '<', "/tmp/spxout1.wav" || die "Can't open file tmpfile: $!\n";
     open IN2, '<', "/tmp/spxout0.wav" || die "Can't open file tmpfile: $!\n";
-    open OUT, '>', "/tmp/spxout.wav" || die "Can't open file $out_file\n";
+    open OUT, '>', "/tmp/spxout.wav" || die "Can't open file $outfile\n";
     
     # important info for headers
     my $data_size = $out_size - 88; # 44 bits * 2 files 
@@ -70,7 +68,7 @@ sub spxcat {
     close IN1;
     close IN2;
     close OUT;
-    &spx_enc($out_file);
+    &spx_enc($outfile);
     unlink glob "/tmp/spxout*";
 }
 
