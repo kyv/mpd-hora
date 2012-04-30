@@ -1,6 +1,6 @@
 Demonio para reproducir la hora con mpd. Permite que mpd reproduce la hora actual a reproducir 'hora.spx', permitiendo asi su programción a treves de la lista de reproduccion de mpd. Mpd-hora puede tambien periodicamente agregar 'hora.spx' a la cola de mpd de manera automatica. 
 
-paquete incluye: 
+incluye: 
 
   spxcat: concatenar dos ficheros formato speex
   mpd-hora: daemono de la hora 
@@ -11,12 +11,12 @@ actualmente el mecanismo de 'generar' la hora depende
 de los binarios speexenc y speexdec. en debian si encuentra
 en el paquete 'speex'. ademas necesitas 'mpc', y, obviamente, mpd. 
 
-para installar: 
-cp -r audios /var/lib/mpd/hora
-sudo cp spxcat /usr/local/bin/
-sudo cp mpd-hora /usr/local/bin
-chmod +x /usr/local/bin/spxcat
-chmod +x /usr/local/bin/mpd-hora
+Si puede installar los audios donde sea, pero la configuracion por las busca en '/var/lib/mpd/hora'. Mpd-hora busca 'hora.spx' en la biblioteca de mpd. Hay que copiarlo alla y actualizar el base de datos de mpd. 	  
+
+$ cp -r audios /var/lib/mpd/hora
+$ perl Makefile.PL
+$ make
+# make install 
 
 usar asi: mpd-hora -[h|d|a] [-s n ]
 
