@@ -18,7 +18,9 @@ use Encode;
 use Proc::Daemon;
 use Getopt::Std;
 
+my $mpdlib="/var/lib/mpd/music";
 my $horabin="/usr/local/bin";
+my $outfile = "$mpdlib/hora.spx";
 # rest time between loops, if auto mode
 my $rest = "200"; # 3.333 min, works for me!
 
@@ -32,7 +34,6 @@ if ($opt{s}){$rest = $opt{s}};
 # initialize mpd object
 my $mpd = Audio::MPD->new;
 my $song = $mpd->collection->song( 'hora.spx' );
-
 # daemonize
 Proc::Daemon::Init unless $opt{d};
 
@@ -51,7 +52,7 @@ while (1) {
     {
 	if ( /player/ ) 
 	{ 
-	    &spxcat;
+	    &spxcat($outfile);
             if ( $opt{a} ) {
     	        my $pid = fork();
      	        if ( $pid == -1 ) {
@@ -64,6 +65,7 @@ while (1) {
     	        }	
 
 	    }
+
 	}
     }
     debug("dormir $rest segundos\n") if $opt{a};
@@ -73,14 +75,16 @@ while (1) {
 sub spxcat
 {
     debug("spxcat\n");
-    $mpd->stop;
-    system ('spxcat') == 0 or die "Cannot open pipe to spxcat ($?): $!";
-    $mpd->play;
+    my $pos = $mpd->current->pos;
+    system ("spxcat $outfile") == 0 or die "Cannot open pipe to spxcat ($?): $!"
+;
+    sleep .7; # necesary to get mpd to register new file
+    $mpd->play($pos);
 }
 
 sub delete {
     debug("modo automatico, aguanta al voz\n");
-    sleep(15); 
+    sleep(10); 
     my @items = $mpd->playlist->as_items;
     my $pos = $mpd->current->pos;
     my $prev = $pos-1;
@@ -120,7 +124,7 @@ sub cue_hora
     }
     debug("cue $song\n");
     $mpd->playlist->add( "$song" );
-    debug("add hora to position: $pos\n");
+    debug("add $song to position: $pos\n");
     my $len = $#items+1;  
     $mpd->playlist->move($len, $next);
 }
