@@ -10,6 +10,7 @@ requires 'Encode';
 requires 'Proc::Daemon';
 requires 'Getopt::Std';
 requires_external_bin 'mpc';
+requires_external_bin 'mpd';
 install_script 'mpd-hora';
 install_script 'spxcat';
  
