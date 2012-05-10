@@ -19,8 +19,7 @@ use Proc::Daemon;
 use Getopt::Std;
 
 my $mpdlib="/var/lib/mpd/music";
-my $horabin="/usr/local/bin";
-my $outfile = "$mpdlib/hora.spx";
+my $outfile = "$mpdlib/hora.ogg";
 # rest time between loops, if auto mode
 my $rest = "200"; # 3.333 min, works for me!
 
@@ -33,7 +32,7 @@ if ($opt{s}){$rest = $opt{s}};
 
 # initialize mpd object
 my $mpd = Audio::MPD->new;
-my $song = $mpd->collection->song( 'hora.spx' );
+my $song = $mpd->collection->song( 'hora.ogg' );
 # daemonize
 Proc::Daemon::Init unless $opt{d};
 
@@ -76,9 +75,10 @@ sub spxcat
 {
     debug("spxcat\n");
     my $pos = $mpd->current->pos;
-    system ("spxcat $outfile") == 0 or die "Cannot open pipe to spxcat ($?): $!"
+    $mpd->pause;
+    system ("spxcat $outfile") == 0 or die "[error] spxcat failure ($?): $!"
 ;
-    sleep .7; # necesary to get mpd to register new file
+    sleep .2; # necesary to get mpd to register new file
     $mpd->play($pos);
 }
 
@@ -88,8 +88,8 @@ sub delete {
     my @items = $mpd->playlist->as_items;
     my $pos = $mpd->current->pos;
     my $prev = $pos-1;
-    if (  $items[$prev]->file eq 'hora.spx' ) {
-        debug("quitar hora.spx de la lista\n");
+    if (  $items[$prev]->file eq 'hora.ogg' ) {
+        debug("quitar hora.ogg de la lista\n");
         $mpd->playlist->delete($prev);
     }
 }
@@ -117,13 +117,13 @@ sub cue_hora
     my @items = $mpd->playlist->as_items;
     my $pos = $mpd->current->pos;
     my $next = $pos+1;
-    if ( $items[$next]->file eq 'hora.spx' || $items[$pos]->file eq 'hora.spx' )
+    if ( $items[$next]->file eq $song->file || $items[$pos]->file eq $song->file )
     {
         debug("$song already in the cue, skip ...\n");
         return; 
     }
     debug("cue $song\n");
-    $mpd->playlist->add( "$song" );
+    $mpd->playlist->add($song->file);
     debug("add $song to position: $pos\n");
     my $len = $#items+1;  
     $mpd->playlist->move($len, $next);
@@ -133,7 +133,7 @@ sub usage
 {
     print <<EOS;
 
-    Add hora.spx to playlist, and 
+    Add hora.ogg to playlist, and 
     wait until song change to play the time. 
     Make sure you have the audio files in place, 
     and mpd configured. 
@@ -143,7 +143,7 @@ sub usage
      -h     : this (help) message
      -d     : depurar programa, no-daemonizar
      -s n   : number of seconds to wait between loops
-     -a     : automatico, 'hora.spx' si agrega manualmente
+     -a     : automatico, 'hora.ogg' si agrega manualmente
 	      a la lista por cada '-s' segundos.  
 
     example: $0 -s 200 
