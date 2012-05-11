@@ -1,0 +1,16 @@
+echo '<<<player hook>>>'
+echo $MPD_SONG_URI
+
+if [[ $MPD_SONG_URI == hora.ogg ]] && [[ ! -f /tmp/hora.lock ]] ; then
+    mpc pause
+    POS=$(mpc status -f %position% | sed -n 1p)
+    touch /tmp/hora.lock
+    echo '[spxcat] play time'
+    spxcat /var/lib/mpd/music/hora.ogg 
+    mpc play $POS
+     
+fi
+if [[ $MPD_SONG_URI != hora.ogg ]] && [[ -f /tmp/hora.lock ]] ; then
+    rm /tmp/hora.lock
+fi
+
