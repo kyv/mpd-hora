@@ -23,7 +23,7 @@ usar asi: mpd-hora -[h|d|a] [-s n ]
      -h     : mensaje de ayuda
      -d     : depurar programa, no-daemonizar
      -s n   : segundos esperar entre bucles (sleep)
-     -a     : automatico, 'hora.spx' si agrega manualmente
+     -a     : automatico, 'hora.ogg' si agrega manualmente
 	      a la lista por cada '-s' segundos.
 
 ejemplo: mpd-hora -s 200
