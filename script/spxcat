@@ -79,7 +79,7 @@ sub oggcat {
     close IN2;
     close OUT;
     &ogg_enc($outfile);
-    #unlink glob "/tmp/oggout*";
+    unlink glob "/tmp/oggout*";
 }
 
 sub ogg_dec {
