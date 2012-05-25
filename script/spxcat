@@ -12,9 +12,9 @@
 
 use strict; 
 use warnings; 
-#die "Not Enough arguments\n" if $#ARGV != 1;
+die "Not Enough arguments\n" if $#ARGV+1 < 1;
 
-my $horalib="/var/lib/mpd/hora";
+my $horalib="/usr/share/spxcat/audio";
 my $fmt="ogg"; # "spx" for speex
 my ($hour, $min) = &get_time;
 
