@@ -1,40 +1,48 @@
-# Contributor: Kevin Brown <kev [at] flujos [dot] org>
+#Contributor: Rasi <rasi@xssn.at>
 
 pkgname=mpd-hora
-pkgver=20120522
+arch=('any')
+pkgver=20120524
 pkgrel=1
-pkgdesc="mpd-hora"
-arch=(i686 x86_64)
+pkgdesc="concatanate 2 vorbis files in order to say the time"
+source=()
 url="https://github.com/kyv/mpd-hora"
-depends=('mpd' 'vorbis-tools') 
-makedepends=('git')
+license="perl"
+depends=('mpd' 'mpdcron-git')
+makedepends=('make' 'wget' 'tar')
+md5sums=()
+options=('!libtool')
+pwd=$(pwd)
+#_gitroot="git://git.lizardhost.co.uk/mpdcron.git"
+#_gitname="mpdcron"
+_gitroot="git://github.com/kyv/mpd-hora"
+_gitname="mpd-hora"
 
-_gitroot="git://github.com/kyv/mpd-hora.git"
-_gitname="mpdhora"
+build() {
+  cd ${srcdir}
+  msg "Connecting to $pkgname GIT server...."
 
-md5sums=('eeb2c55443f753f9244eaac006cce132')
-license=('perl5')
-
-build()
-{
-  msg "Connecting to GIT server...."
-
-  if [ -d $_gitname ] ; then
-    cd $_gitname && git pull origin
-    msg "The local files are updated."
+  if [ -d ${srcdir}/$_gitname ] ; then
+          cd $_gitname && git pull origin
+          msg "The local files are updated."
   else
-    git clone $_gitroot $_gitname
+          git clone $_gitroot
   fi
 
   msg "GIT checkout done or server timeout"
-  msg "Starting make..."
 
-  rm -rf "$srcdir/$_gitname-build"
-  git clone -l "$srcdir/$_gitname" "$srcdir/$_gitname-build"
-  cd "$srcdir/$_gitname-build"
-	
-       perl Makefile.Pl installdirs=vendor destdir="$pkgdir/"
-       make || return 1
-       make DESTDIR=$pkgdir install
-       cd $pkgdir/usr/bin
+  cp -r ${srcdir}/$_gitname ${srcdir}/$_gitname-build
+  cd ${srcdir}/$_gitname-build
+
+  msg "configuring perl make..."
+  perl Makefile.PL
+  msg "Starting make..."
+  make DESTDIR=$pkgdir install || return 1
+  msg "copy mpdcron hook to /usr/share/doc/mpdcron/player.spxcat"
+  mkdir -p $pkgdir/usr/share/doc/mpdcron/
+  cp -af mpdcron/hooks/player $pkgdir/usr/share/doc/mpdcron/player.spxcat
+  msg "download audios"
+  wget http://yaxhil.flujos.org/wiki/audio.tar.xz
+  mkdir -p $pkgdir/usr/share/spxcat/
+  tar xvJf audio.tar.xz -C $pkgdir/usr/share/spxcat/
 }
